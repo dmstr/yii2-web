@@ -14,13 +14,26 @@ namespace dmstr\web\traits;
  * @author Christopher Stebe <c.stebe@herzogkommunikation.de>
  */
 
+use yii\base\Module;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
+
+/**
+ * Trait to be attached to a `yii\base\Module` or `yii\web\Controller`
+ *
+ * Enables accessFilter for "route-access"
+ */
 
 trait AccessBehaviorTrait
 {
     public function behaviors()
     {
+        if ($this instanceof Module) {
+            $controller = \Yii::$app->controller;
+        } else {
+            $controller = $this;
+        }
+
         return ArrayHelper::merge(
             parent::behaviors(),
             [
@@ -29,9 +42,9 @@ trait AccessBehaviorTrait
                     'rules' => [
                         [
                             'allow'         => true,
-                            'matchCallback' => function ($rule, $action) {
+                            'matchCallback' => function ($rule, $action) use ($controller) {
                                 return \Yii::$app->user->can(
-                                    $this->module->id . '_' . $this->id . '_' . $action->id,
+                                    $controller->module->id . '_' . $controller->id . '_' . $action->id,
                                     ['route' => true]
                                 );
                             },
