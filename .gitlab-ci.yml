@@ -1,0 +1,18 @@
+stages:
+  - build
+  - test
+
+before_script:
+  - export ISOLATION=buildref${CI_BUILD_REF}$(echo ${CI_BUILD_REF_NAME} | tr -dc '[:alnum:]\n\r' | tr '[:upper:]' '[:lower:]')
+  - export COMPOSE_PROJECT_NAME=${ISOLATION}
+
+build:
+  script:
+    - cd tests
+    - make clean build
+
+test:
+  script:
+    - cd tests
+    - make up setup
+    - docker-compose run php codecept run
