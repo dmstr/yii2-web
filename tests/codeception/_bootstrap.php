@@ -8,7 +8,7 @@ require($rootPath.'/src/config/env.php');
 
 if (getenv('YII_ENV') !== 'test') {
     echo "Error: YII_ENV must be set to 'test'\n";
-    exit;
+    exit(1);
 }
 
 defined('YII_DEBUG') or define('YII_DEBUG', true);
