@@ -11,8 +11,10 @@ services:
         ports:
           - 80
     php:
-        image: dmstr/yii2-app
+        build: .
         working_dir: /app/vendor/dmstr/yii2-web
+        environment:
+          - APP_CONFIG_FILE=/app/vendor/dmstr/yii2-web/tests/_config/test.php
         volumes:
-            - /app/web
-            - ../:/app/vendor/dmstr/yii2-web
+          - /app/web
+          - ../:/app/vendor/dmstr/yii2-web
