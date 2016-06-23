@@ -7,13 +7,20 @@ class ExtensionTest extends yii\codeception\TestCase
 
     public $appConfig = '/app/vendor/dmstr/yii2-web/tests/codeception/_config/test.php';
 
-    public function testYiiApp()
+    public function testApp()
     {
         $this->assertNotEquals(\Yii::$app, null);
     }
 
-    public function testDebugUser()
+    public function testUser()
     {
         $this->assertNotEquals(\Yii::$app->user, null);
     }
+
+    public function testUserCan()
+    {
+        #\Codeception\Util\Debug::debug(\Yii::$app->user);
+        $this->assertEquals(\Yii::$app->user->can('something'), false);
+    }
+
 }
