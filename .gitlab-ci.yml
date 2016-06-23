@@ -7,7 +7,7 @@ before_script:
   - export COMPOSE_PROJECT_NAME=${ISOLATION}
 
 build:
-stage: build
+  stage: build
   script:
     - cd tests
     - make clean build
