@@ -17,4 +17,4 @@ test:
   script:
     - cd tests
     - make up setup
-    - docker-compose run php codecept run
+    - docker-compose run -e YII_ENV=test php codecept run
