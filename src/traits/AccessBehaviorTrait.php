@@ -43,8 +43,9 @@ trait AccessBehaviorTrait
                         [
                             'allow'         => true,
                             'matchCallback' => function ($rule, $action) use ($controller) {
+                                $permission = str_replace('/','_',$controller->module->id . '_' . $controller->id . '_' . $action->id);
                                 return \Yii::$app->user->can(
-                                    $controller->module->id . '_' . $controller->id . '_' . $action->id,
+                                    $permission,
                                     ['route' => true]
                                 );
                             },
