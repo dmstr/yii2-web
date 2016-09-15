@@ -27,10 +27,15 @@ class User extends \yii\web\User
     public $rootUsers = [];
 
     /**
+     * @var boolean whether to show a warning flash message for root users
+     */
+    public $enableRootWarningFlash = true;
+
+    /**
      * Extended permission check with `Guest` role and `route`.
      *
-     * @param string    $permissionName
-     * @param array     $params
+     * @param string $permissionName
+     * @param array $params
      * @param bool|true $allowCaching
      *
      * @return bool
@@ -40,6 +45,7 @@ class User extends \yii\web\User
         switch (true) {
             // root users have all permissions
             case \Yii::$app->user->identity && in_array(\Yii::$app->user->identity->username, $this->rootUsers):
+                $this->addRootWarningFlash();
                 return true;
                 break;
             case !empty($params['route']):
@@ -98,5 +104,22 @@ class User extends \yii\web\User
         }
 
         return false;
+    }
+
+    private function addRootWarningFlash()
+    {
+        static $found = false;
+
+        if ($this->enableRootWarningFlash && !$found) {
+            $warning = 'You are logged in as an unrestricted root user, this is only recommended for maintenance tasks.';
+            $warnings = \Yii::$app->session->getFlash('key');
+            if (!$warnings || array_search($warning, $warnings) === false) {
+                \Yii::$app->session->addFlash(
+                    'warning',
+                    'You are logged in as an unrestricted root user, this is only recommended for maintenance tasks.'
+                );
+                $found = true;
+            }
+        }
     }
 }
