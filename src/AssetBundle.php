@@ -10,6 +10,7 @@ namespace dmstr\web;
  * file that was distributed with this source code.
  */
 
+use yii\base\ErrorException;
 use yii\helpers\FileHelper;
 use yii\web\AssetBundle as BaseAssetBundle;
 
@@ -38,7 +39,11 @@ class AssetBundle extends BaseAssetBundle
             foreach ($files as $file) {
                 $mtimes[] = filemtime($file);
             }
-            touch($path, max($mtimes));
+            try {
+                touch($path, max($mtimes));
+            } catch (ErrorException $e) {
+                \Yii::warning([$path,$e->getMessage()], __METHOD__);
+            }
         }
     }
 }
