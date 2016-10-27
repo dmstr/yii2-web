@@ -33,17 +33,26 @@ class AssetBundle extends BaseAssetBundle
         parent::init();
 
         if (getenv('APP_ASSET_FORCE_PUBLISH')) {
+
             $path = \Yii::getAlias($this->sourcePath);
+            if (!$path) {
+                \Yii::warning('Empty path', __METHOD__);
+                return;
+            }
+
             $files = FileHelper::findFiles($path);
             $mtimes = [];
+
             foreach ($files as $file) {
                 $mtimes[] = filemtime($file);
             }
             try {
                 touch($path, max($mtimes));
+                \Yii::info('Touched path', __METHOD__);
             } catch (ErrorException $e) {
                 \Yii::warning([$path,$e->getMessage()], __METHOD__);
             }
+
         }
     }
 }
