@@ -1,6 +1,10 @@
 Yii2 Web
 ====================
 
+[![Latest Stable Version](https://poser.pugx.org/dmstr/yii2-web/v/stable.svg)](https://packagist.org/packages/dmstr/yii2-web) 
+[![Total Downloads](https://poser.pugx.org/dmstr/yii2-web/downloads.svg)](https://packagist.org/packages/dmstr/yii2-web)
+[![License](https://poser.pugx.org/dmstr/yii2-web/license.svg)](https://packagist.org/packages/dmstr/yii2-web)
+
 Yii2 Framework web closures, traits and helpers
 
 Installation
