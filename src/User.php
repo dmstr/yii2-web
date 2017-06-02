@@ -69,7 +69,12 @@ class User extends \yii\web\User
      */
     private function canGuest($permissionName, $params, $allowCaching)
     {
-        $guestPermissions = $this->getAuthManager()->getPermissionsByRole(self::PUBLIC_ROLE);
+        static $guestPermissions;
+
+        if ($guestPermissions === null) {
+            \Yii::trace('Fetching guest permissions form auth manager',  __METHOD__);
+            $guestPermissions = $this->getAuthManager()->getPermissionsByRole(self::PUBLIC_ROLE);
+        }
 
         return array_key_exists($permissionName, $guestPermissions);
     }
