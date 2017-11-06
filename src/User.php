@@ -47,7 +47,9 @@ class User extends \yii\web\User
     {
         switch (true) {
             // root users have all permissions
-            case \Yii::$app->user->identity && in_array(\Yii::$app->user->identity->username, $this->rootUsers):
+            case \Yii::$app->user->identity && (
+                    in_array(\Yii::$app->user->identity->username, $this->rootUsers) ||
+                    in_array(\Yii::$app->user->identity->id, $this->rootUsers)):
                 $this->addRootWarningFlash();
                 return true;
                 break;
