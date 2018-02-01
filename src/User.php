@@ -17,7 +17,9 @@ namespace dmstr\web;
  * Custom user class with additional checks and implementation of a 'root' user, who
  * has all permissions (`can()` always return true)
  *
- * It additionally performs checks for route permissions. A route permission can also be assigned to a PUBLIC_ROLE
+ * It additionally performs checks for:
+ * - route permissions. A route permission can also be assigned to a PUBLIC_ROLE
+ * - if `user->isGuest() == true` it checks if (non route) Permission is assigned to a PUBLIC_ROLE
  *
  */
 class User extends \yii\web\User
@@ -53,7 +55,12 @@ class User extends \yii\web\User
                 break;
             case !empty($params['route']):
                 $return = $this->checkAccessRoute($permissionName, $params, $allowCaching);
-                \Yii::trace("Checking route permissions for '{$permissionName}', result: {$return}", __METHOD__);
+                \Yii::trace("Checking route permissions for '{$permissionName}', result: " . (int)$return, __METHOD__);
+                return $return;
+                break;
+            case \Yii::$app->user->isGuest:
+                $return = $this->canGuest($permissionName, $params, $allowCaching);
+                \Yii::trace("Check if GuestUser has permissions for '{$permissionName}', result: " . (int)$return, __METHOD__);
                 return $return;
                 break;
             default:
