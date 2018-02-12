@@ -17,14 +17,19 @@ namespace dmstr\web;
  * Custom user class with additional checks and implementation of a 'root' user, who
  * has all permissions (`can()` always return true)
  *
+ * Special Roles:
+ * - PUBLIC_ROLE: Default Role for all User, can be configured in authManager['defaultRoles']
+ * - GUEST_ROLE:  Special Role for GuestUser. Should have PUBLIC_ROLE as child
+ *
  * It additionally performs checks for:
- * - route permissions. A route permission can also be assigned to a PUBLIC_ROLE
- * - if `user->isGuest() == true` it checks if (non route) Permission is assigned to a PUBLIC_ROLE
+ * - route permissions. eg. a permission `app_site` will match, `app_site_foo`
+ * - if `user->isGuest() == true` it checks if permission is assigned to a GUEST_ROLE
  *
  */
 class User extends \yii\web\User
 {
     const PUBLIC_ROLE = 'Public';
+    const GUEST_ROLE = 'Guest';
 
     /**
      * @var array Users with all permissions
@@ -58,13 +63,8 @@ class User extends \yii\web\User
                 \Yii::trace("Checking route permissions for '{$permissionName}', result: " . (int)$return, __METHOD__);
                 return $return;
                 break;
-            case \Yii::$app->user->isGuest:
-                $return = $this->canGuest($permissionName, $params, $allowCaching);
-                \Yii::trace("Check if GuestUser has permissions for '{$permissionName}', result: " . (int)$return, __METHOD__);
-                return $return;
-                break;
             default:
-                return parent::can($permissionName, $params, $allowCaching);
+                return self::canUserOrGuest($permissionName, $params, $allowCaching);
         }
     }
 
@@ -83,10 +83,27 @@ class User extends \yii\web\User
 
         if ($guestPermissions === null) {
             \Yii::trace('Fetching guest permissions form auth manager',  __METHOD__);
-            $guestPermissions = $this->getAuthManager()->getPermissionsByRole(self::PUBLIC_ROLE);
+            $guestPermissions = $this->getAuthManager()->getPermissionsByRole(self::GUEST_ROLE);
         }
 
         return array_key_exists($permissionName, $guestPermissions);
+    }
+
+    /**
+     * Checks permissions for authenticated User || guest role
+     *
+     * @param $permissionName
+     * @param $params
+     * @param $allowCaching
+     *
+     * @return bool
+     */
+    private function canUserOrGuest($permissionName, $params, $allowCaching) {
+        if (\Yii::$app->user->id) {
+           return parent::can($permissionName, $params, $allowCaching);
+        } else {
+            return $this->canGuest($permissionName, $params, $allowCaching);
+        }
     }
 
     /**
@@ -107,11 +124,7 @@ class User extends \yii\web\User
         $routePermission = '';
         foreach ($route as $part) {
             $routePermission .= $part;
-            if (\Yii::$app->user->id) {
-                $canRoute = parent::can($routePermission, $params, $allowCaching);
-            } else {
-                $canRoute = $this->canGuest($routePermission, $params, $allowCaching);
-            }
+            $canRoute = self::canUserOrGuest($routePermission, $params, $allowCaching);
             if ($canRoute) {
                 return true;
             }
