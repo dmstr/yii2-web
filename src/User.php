@@ -71,6 +71,10 @@ class User extends \yii\web\User
     {
         static $guestPermissions;
 
+        if ($permissionName === self::PUBLIC_ROLE) {
+            return true;
+        }
+
         if ($guestPermissions === null) {
             \Yii::trace('Fetching guest permissions form auth manager',  __METHOD__);
             $guestPermissions = $this->getAuthManager()->getPermissionsByRole(self::PUBLIC_ROLE);
