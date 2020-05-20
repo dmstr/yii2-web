@@ -43,7 +43,9 @@ trait AccessBehaviorTrait
                         [
                             'allow'         => true,
                             'matchCallback' => function ($rule, $action) use ($controller) {
-                                $permission = str_replace('/','_',$controller->module->id . '_' . $controller->id . '_' . $action->id);
+                                // use id including parent modules, if empty (eg. 'app') fall-back to id
+                                $moduleId = empty($controller->module->uniqueId) ? $controller->module->id : $controller->module->uniqueId;
+                                $permission = str_replace('/','_', trim($moduleId,'/') . '_' . $controller->id . '_' . $action->id);
                                 return \Yii::$app->user->can(
                                     $permission,
                                     ['route' => true]
