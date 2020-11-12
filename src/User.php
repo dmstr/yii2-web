@@ -29,6 +29,10 @@ namespace dmstr\web;
 class User extends \yii\web\User
 {
     const PUBLIC_ROLE = 'Public';
+
+    /*
+     * @deprecated
+     */
     const GUEST_ROLE = 'Guest';
 
     /**
@@ -82,8 +86,8 @@ class User extends \yii\web\User
         static $guestPermissions;
 
         if ($guestPermissions === null) {
-            \Yii::trace('Fetching guest permissions form auth manager',  __METHOD__);
-            $guestPermissions = $this->getAuthManager()->getPermissionsByRole(self::GUEST_ROLE);
+            \Yii::trace('Fetching guest permissions form auth manager '.self::PUBLIC_ROLE,  __METHOD__);
+            $guestPermissions = $this->getAuthManager()->getChildren(self::PUBLIC_ROLE);
         }
 
         return array_key_exists($permissionName, $guestPermissions);
