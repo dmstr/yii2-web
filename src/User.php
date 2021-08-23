@@ -105,8 +105,8 @@ class User extends \yii\web\User
             $guestPermissions = [];
             $this->getChildrenRecursiceWithoutRules(self::GUEST_ROLE, $guestPermissions);
         }
-        \Yii::debug($guestPermissions);
-        return array_key_exists($permissionName, $guestPermissions);
+
+        return in_array($permissionName, $guestPermissions);
     }
 
     /**
