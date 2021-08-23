@@ -18,7 +18,7 @@ namespace dmstr\web;
  * has all permissions (`can()` always return true)
  *
  * Special Roles:
- * - PUBLIC_ROLE: Default Role for all User, can be configured in authManager['defaultRoles']
+ * - PUBLIC_ROLE: Should be a child of a default role (can be configured in authManager['defaultRoles'])
  * - GUEST_ROLE:  Special Role for GuestUser. Should have PUBLIC_ROLE as child
  *
  * It additionally performs checks for:
@@ -28,7 +28,6 @@ namespace dmstr\web;
  */
 class User extends \yii\web\User
 {
-    const PUBLIC_ROLE = 'Public';
     const GUEST_ROLE = 'Guest';
 
     /**
@@ -69,6 +68,25 @@ class User extends \yii\web\User
     }
 
     /**
+     * Checks permissions for authenticated User || guest role
+     *
+     * @param $permissionName
+     * @param $params
+     * @param $allowCaching
+     *
+     * @return bool
+     */
+    private function canUserOrGuest($permissionName, $params, $allowCaching)
+    {
+        if (\Yii::$app->user->id) {
+            return parent::can($permissionName, $params, $allowCaching);
+        } else {
+            return $this->canGuest($permissionName, $params, $allowCaching);
+        }
+    }
+
+
+    /**
      * Checks permissions from guest role, when no user is logged in.
      *
      * @param $permissionName
@@ -82,28 +100,35 @@ class User extends \yii\web\User
         static $guestPermissions;
 
         if ($guestPermissions === null) {
-            \Yii::trace('Fetching guest permissions form auth manager',  __METHOD__);
-            $guestPermissions = $this->getAuthManager()->getPermissionsByRole(self::GUEST_ROLE);
+            \Yii::trace('Fetching guest permissions form auth manager', __METHOD__);
+            // since rules can not reliably be checked without a user, skip them
+            $guestPermissions = [];
+            $this->getChildrenRecursiceWithoutRules(self::GUEST_ROLE, $guestPermissions);
         }
-
+        \Yii::debug($guestPermissions);
         return array_key_exists($permissionName, $guestPermissions);
     }
 
     /**
-     * Checks permissions for authenticated User || guest role
+     * Get children of auth-item without a rule
      *
-     * @param $permissionName
-     * @param $params
-     * @param $allowCaching
-     *
-     * @return bool
+     * @param $item
+     * @param $result
+     * @return mixed
      */
-    private function canUserOrGuest($permissionName, $params, $allowCaching) {
-        if (\Yii::$app->user->id) {
-           return parent::can($permissionName, $params, $allowCaching);
-        } else {
-            return $this->canGuest($permissionName, $params, $allowCaching);
+    private function getChildrenRecursiceWithoutRules($item, &$result)
+    {
+        $children = $this->getAuthManager()->getChildren($item);
+
+        foreach ($children as $child) {
+            if ($child->ruleName) {
+                continue;
+            }
+            $result[] = $child->name;
+            $this->getChildrenRecursiceWithoutRules($child->name, $result);
         }
+
+        return $result;
     }
 
     /**
