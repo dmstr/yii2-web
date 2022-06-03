@@ -56,14 +56,12 @@ class User extends \yii\web\User
             case \Yii::$app->user->identity && in_array(\Yii::$app->user->identity->username, $this->rootUsers):
                 $this->addRootWarningFlash();
                 return true;
-                break;
             case !empty($params['route']):
                 $return = $this->checkAccessRoute($permissionName, $params, $allowCaching);
                 \Yii::trace("Checking route permissions for '{$permissionName}', result: " . (int)$return, __METHOD__);
                 return $return;
-                break;
             default:
-                return self::canUserOrGuest($permissionName, $params, $allowCaching);
+                return $this->canUserOrGuest($permissionName, $params, $allowCaching);
         }
     }
 
@@ -149,7 +147,7 @@ class User extends \yii\web\User
         $routePermission = '';
         foreach ($route as $part) {
             $routePermission .= $part;
-            $canRoute = self::canUserOrGuest($routePermission, $params, $allowCaching);
+            $canRoute = $this->canUserOrGuest($routePermission, $params, $allowCaching);
             if ($canRoute) {
                 return true;
             }
