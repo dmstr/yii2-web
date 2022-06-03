@@ -164,10 +164,10 @@ class User extends \yii\web\User
         if ($this->enableRootWarningFlash && !$found && !\Yii::$app->request->isAjax) {
             $warning = 'You are logged in as an unrestricted root user, this is only recommended for maintenance tasks.';
             $warnings = \Yii::$app->session->getFlash('warning');
-            if (!$warnings || array_search($warning, $warnings) === false) {
+            if (!$warnings || !in_array($warning, $warnings, true)) {
                 \Yii::$app->session->addFlash(
                     'warning',
-                    'You are logged in as an unrestricted root user, this is only recommended for maintenance tasks.'
+                    $warning
                 );
                 $found = true;
             }
