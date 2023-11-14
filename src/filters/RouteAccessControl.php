@@ -29,12 +29,29 @@ use yii\web\Controller;
 class RouteAccessControl extends AccessControl
 {
 
+    /**
+     * separator that is used to build the rbac item name from the route
+     *
+     * @var string
+     */
     public $routePartSeparator = '_';
+
+    /**
+     * optional params for the User:can() check
+     *
+     * @var array
+     */
     public $routeCheckParams = [];
+    /**
+     * index name that is used in the AccessControl::rules array
+     *
+     * @var string
+     */
+    public $accessCheckRuleIndex = 'routeAccess';
 
     public function beforeAction($action)
     {
-        $this->rules[] = $this->getRouteAcessControlRule();
+        $this->rules[$this->accessCheckRuleIndex] = $this->getRouteAcessControlRule();
         return parent::beforeAction($action);
     }
 
@@ -45,11 +62,11 @@ class RouteAccessControl extends AccessControl
         } else {
             $controller = \Yii::$app->controller;
         }
-
         $separator = $this->routePartSeparator;
+        $routeCheckParams = $this->routeCheckParams;
         $ruleParams = [
                 'allow'         => true,
-                'matchCallback' => function ($rule, $action) use ($controller, $separator) {
+                'matchCallback' => function ($rule, $action) use ($controller, $separator, $routeCheckParams) {
                     // use id including parent modules, if empty (eg. 'app') fall-back to id
                     $moduleId = empty($controller->module->uniqueId) ? $controller->module->id : $controller->module->uniqueId;
                     // get parts of the route to the current controller action
@@ -58,7 +75,7 @@ class RouteAccessControl extends AccessControl
                     $perm = '';
                     foreach ($permParts as $permPart) {
                         $perm = implode($separator, array_filter([$perm, $permPart]));
-                        if ($this->user->can($perm)) {
+                        if ($this->user->can($perm, $routeCheckParams)) {
                             return true;
                         }
                     }
