@@ -14,8 +14,7 @@ namespace dmstr\web\traits;
  * @author Christopher Stebe <c.stebe@herzogkommunikation.de>
  */
 
-use yii\base\Module;
-use yii\filters\AccessControl;
+use dmstr\web\filters\RouteAccessControl;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -28,31 +27,12 @@ trait AccessBehaviorTrait
 {
     public function behaviors()
     {
-        if ($this instanceof Module) {
-            $controller = \Yii::$app->controller;
-        } else {
-            $controller = $this;
-        }
-
         return ArrayHelper::merge(
             parent::behaviors(),
             [
                 'access' => [
-                    'class' => AccessControl::className(),
-                    'rules' => [
-                        [
-                            'allow'         => true,
-                            'matchCallback' => function ($rule, $action) use ($controller) {
-                                // use id including parent modules, if empty (eg. 'app') fall-back to id
-                                $moduleId = empty($controller->module->uniqueId) ? $controller->module->id : $controller->module->uniqueId;
-                                $permission = str_replace('/','_', trim($moduleId,'/') . '_' . $controller->id . '_' . $action->id);
-                                return \Yii::$app->user->can(
-                                    $permission,
-                                    ['route' => true]
-                                );
-                            },
-                        ]
-                    ]
+                    'class' => RouteAccessControl::class,
+                    'routeCheckParams' => ['route' => true]
                 ]
             ]
         );
