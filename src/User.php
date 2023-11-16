@@ -22,9 +22,12 @@ namespace dmstr\web;
  * - GUEST_ROLE:  Special Role for GuestUser. Should have PUBLIC_ROLE as child
  *
  * It additionally performs checks for:
- * - route permissions. eg. a permission `app_site` will match, `app_site_foo`
  * - if `user->isGuest() == true` it checks if permission is assigned to a GUEST_ROLE
- *
+ * - route permissions:
+ *   - e.g. a permission `app_site` will match, `app_site_foo`
+ *   - route permissions are checked if $param for User::can() has 'route' => true
+ *   - see: self::checkAccessRoute()
+ * 
  */
 class User extends \yii\web\User
 {
@@ -132,7 +135,7 @@ class User extends \yii\web\User
     /**
      * Checks route permissions.
      *
-     * Splits `permissionName` by underscore and match parts against more global rule
+     * Splits `permissionName` by underscore or `$params['routePartSeparator']` and match parts against more global rule
      * eg. a permission `app_site` will match, `app_site_foo`
      *
      * @param $permissionName
@@ -143,7 +146,8 @@ class User extends \yii\web\User
      */
     private function checkAccessRoute($permissionName, $params, $allowCaching)
     {
-        $route = explode('_', $permissionName);
+        $separator = !empty($params['routePartSeparator']) ? $params['routePartSeparator'] : '_';
+        $route = explode($separator, $permissionName);
         $routePermission = '';
         foreach ($route as $part) {
             $routePermission .= $part;
@@ -151,7 +155,7 @@ class User extends \yii\web\User
             if ($canRoute) {
                 return true;
             }
-            $routePermission .= '_';
+            $routePermission .= $separator;
         }
 
         return false;
